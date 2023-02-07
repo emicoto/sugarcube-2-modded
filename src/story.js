@@ -27,6 +27,14 @@ var Story = (() => {
   // List of widget passages.
   const _widgets = [];
 
+  const _csv = [];
+
+  const _table = [];
+
+  const _xml = [];
+
+  const _template = [];
+
   // Story title.
   let _title = "";
 
@@ -165,7 +173,20 @@ var Story = (() => {
           } else if (passage.tags.includes("widget")) {
             validateSpecialPassages(passage, "widget");
             _widgets.push(passage);
-          }
+          } else if (passage.tags.includes("csv")) {
+            validateSpecialPassages(passage, "csv");
+            _csv.push(passage);
+           } else if (passage.tags.includes("table")) {
+            validateSpecialPassages(passage, "table");
+            _table.push(passage);
+         } else if (passage.tags.includes("xml")) {
+            validateSpecialPassages(passage, "xml");
+            _xml.push(passage);
+         } else if (passage.tags.includes("template")){
+            validateSpecialPassages(passage, "template");
+            _template.push(passage);
+            _passages[passage.title] = passage;
+         }
 
           // All other passages.
           else {
@@ -249,7 +270,23 @@ var Story = (() => {
           } else if (passage.tags.includes("widget")) {
             validateSpecialPassages(passage, "widget");
             _widgets.push(passage);
-          }
+          } else if (passage.tags.includes("csv")) {
+            validateSpecialPassages(passage, "csv");
+            _csv.push(passage);
+           } else if (passage.tags.includes("excel")) {
+            validateSpecialPassages(passage, "excel");
+            _excel.push(passage);
+         } else if (passage.tags.includes("table")) {
+            validateSpecialPassages(passage, "table");
+            _table.push(passage);
+         } else if (passage.tags.includes("xml")) {
+            validateSpecialPassages(passage, "xml");
+            _xml.push(passage);
+         } else if (passage.tags.includes("template")){
+            validateSpecialPassages(passage, "template");
+            _template.push(passage);
+            _passages[passage.title] = passage;
+         }
 
           // All other passages.
           else {
@@ -301,15 +338,19 @@ var Story = (() => {
     /*
 			Evaluate the story scripts.
 		*/
+    let errorAlert = false, alertMsg = "";
+
     for (let i = 0; i < _scripts.length; ++i) {
       try {
         Scripting.evalJavaScript(_scripts[i].text);
       } catch (ex) {
-        console.error(ex);
-        Alert.error(
+        console.error(`[error] ${Era.now()} |`,_scripts[i].title, _scripts, ex);
+        /*Alert.error(
           _scripts[i].title,
           typeof ex === "object" ? ex.message : ex
-        );
+        );*/
+         errorAlert = true;
+         alertMsg += `Catch error on ${_scripts[i].title}\n`
       }
     }
 
@@ -320,15 +361,60 @@ var Story = (() => {
       try {
         Wikifier.wikifyEval(_widgets[i].processText());
       } catch (ex) {
-        console.error(ex);
-        Alert.error(
+        console.error(`[error] ${Era.now()} |`,_widgets[i].title, _widgets[i], ex);
+        /*Alert.error(
           _widgets[i].title,
           typeof ex === "object" ? ex.message : ex
-        );
+        );*/
+         errorAlert = true;
+         alertMsg += `Catch error on ${_widgets[i].title}\n`
       }
     }
 
+
+    // Process the story csv.
+      for (let i = 0; i < _csv.length; ++i) {
+         try {
+            Era.CSV.set( _csv[i].title, Era.loadCSV(_csv[i].processText()));
+         }
+         catch (ex) {
+            console.error(`[error] ${Era.now()} |`,_csv[i].title, _csv[i], ex);
+            errorAlert = true;
+            alertMsg += `Catch error on ${_csv[i].title}\n`
+         }
+      }
+
+    // Process the story table.
+      for (let i = 0; i < _table.length; ++i) {
+         try {
+            Era.Table.set( _table[i].title, Era.parseTable(_table[i].processText()))
+         }
+         catch (ex) {
+            console.error(`[error] ${Era.now()} |`,_table[i].title, _table[i], ex);
+            errorAlert = true;
+            alertMsg += `Catch error on ${_table[i].title}\n`
+         }
+      }
+
+    // Process the story xml.
+    for (let i = 0; i < _xml.length; ++i) {
+      try {
+         Era.XML.set( _xml[i].title, xml2Obj(Era.parseXML(_xml[i].processText())))
+      }
+      catch (ex) {
+         console.error(`[error] ${Era.now()} |`,_xml[i].title, _xml[i], ex);
+         errorAlert = true;
+         alertMsg += `Catch error on ${_xml[i].title}\n`
+      }
+   }
+
+
+    if(errorAlert) {
+      Alert.error(`[Error] ${Era.now()} | Story Init Error.`, `Please check the console for more details.`, alertMsg);
+   }
+
     jQuery.event.trigger({ type: ":initstory" });
+
   }
 
   function _storySetTitle(rawTitle) {
@@ -487,6 +573,26 @@ var Story = (() => {
     return Object.freeze(Array.from(_widgets));
   }
 
+  function passageGetAllCSV() {
+      // NOTE: Return an immutable copy, rather than the internal mutable original.
+      return Object.freeze(Array.from(_csv));
+   }
+
+   function passageGetAllTable(){
+      // NOTE: Return an immutable copy, rather than the internal mutable original.
+      return Object.freeze(Array.from(_table));
+   }
+
+   function passageGetAllXml(){
+      // NOTE: Return an immutable copy, rather than the internal mutable original.
+      return Object.freeze(Array.from(_xml));
+   }
+
+   function passageGetAllTemplate(){
+      // NOTE: Return an immutable copy, rather than the internal mutable original.
+      return Object.freeze(Array.from(_template));
+   }
+
   function passagesLookup(
     key,
     value /* legacy */,
@@ -593,6 +699,10 @@ var Story = (() => {
         getAllScript: { value: passagesGetAllScript },
         getAllStylesheet: { value: passagesGetAllStylesheet },
         getAllWidget: { value: passagesGetAllWidget },
+        getAllCSV: { value: passageGetAllCSV },
+        getAllTable: { value: passageGetAllTable },
+        getAllXml: { value: passageGetAllXml },
+        getAllTemplate: { value: passageGetAllTemplate },
         lookup: { value: passagesLookup },
         lookupWith: { value: passagesLookupWith },
       }

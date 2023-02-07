@@ -38,6 +38,7 @@ const CONFIG = {
 			'src/lib/prngwrapper.js',
 			'src/lib/stylewrapper.js',
 			'src/lib/diff.js',
+         'src/lib/xml2Obj.js',
 			'src/l10n/l10n.js',
 			'src/l10n/legacy.js',
 			'src/l10n/strings.js',
@@ -62,6 +63,7 @@ const CONFIG = {
 			'src/uibar.js',
 			'src/debugbar.js',
 			'src/loadscreen.js',
+         'src/scEra.js',
 			'src/sugarcube.js'
 		],
 		wrap : {
@@ -97,7 +99,8 @@ const CONFIG = {
 		'src/vendor/lz-string.min.js',
 		'src/vendor/FileSaver.min.js',
 		'src/vendor/seedrandom.min.js',
-		'src/vendor/console-hack.min.js'
+		'src/vendor/console-hack.min.js',
+      'src/vendor/path.min.js',
 	],
 	twine1 : {
 		build : {

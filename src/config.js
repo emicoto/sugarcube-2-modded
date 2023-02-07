@@ -56,6 +56,16 @@ var Config = (() => { // eslint-disable-line no-unused-vars, no-var
 	let _uiUpdateStoryElements = true;
 
 
+   // NodeJS settings && Era settings
+   let _nodejs                = false;          // if true, then we are running in node environment
+   let _savePath              = './app/saves';  // path to save file
+   let _lan                   = 'CN';           // running language of Era
+   let _deflan                = 'CN';           // default language of Era
+   let _seclan                = 'EN';           // secondary language of Era
+   let _era                 = {}             // Era config for user
+   let _modules               = {}             // modules config for Era
+   let _afterinit             = false;         // if true, then it's mean all the init process is done
+   let _runningcycle          = false;         // if true, then it's mean the game need to run a cycle until all the init process is done
 	/*******************************************************************************
 		Error Constants.
 	*******************************************************************************/
@@ -77,6 +87,21 @@ var Config = (() => { // eslint-disable-line no-unused-vars, no-var
 		get debug() { return _debug; },
 		set debug(value) { _debug = Boolean(value); },
 
+      get nodejs() { return _nodejs; },
+      set nodejs(value) { _nodejs = Boolean(value); },
+
+      get savePath() { return _savePath; },
+      set savePath(value) { _savePath = String(value); },
+
+      get lan() { return _lan; },
+      set lan(value) { _lan = String(value); },
+
+      get deflan() { return _deflan; },
+      set deflan(value) { _deflan = String(value); },
+
+      get seclan() { return _seclan; },
+      set seclan(value) { _seclan = String(value); },
+
 		get addVisitedLinkClass() { return _addVisitedLinkClass; },
 		set addVisitedLinkClass(value) { _addVisitedLinkClass = Boolean(value); },
 
@@ -91,6 +116,19 @@ var Config = (() => { // eslint-disable-line no-unused-vars, no-var
 
 			_loadDelay = value;
 		},
+      /*
+         Era settings
+      */
+
+      era : _era, //  config for user 
+      mod: _modules, // modules config for Era
+      
+      get afterinit() { return _afterinit; },
+      set afterinit(value) { _afterinit = Boolean(value); },
+
+      get runningcycle() { return _runningcycle; },
+      set runningcycle(value) { _runningcycle = Boolean(value); },
+
 
 		/*
 			Audio settings.

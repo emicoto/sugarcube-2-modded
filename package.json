@@ -1,7 +1,7 @@
 {
-  "name": "SugarCube",
+  "name": "SugarCube:Era+ Edition",
   "version": "2.36.1",
-  "author": "Thomas Michael Edwards <thomasmedwards@gmail.com>",
+  "author": "SugarCube by Thomas Michael Edwards <thomasmedwards@gmail.com>, Era+ Edition by Lune Fox<lolidrop@icloud.com>",
   "description": "Dependency install configuration for SugarCube's Node.js-hosted build script, build.js.",
   "license": "BSD-2-Clause",
   "repository": {

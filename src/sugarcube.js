@@ -89,7 +89,6 @@ var storage = null;
 	Legacy aliases.
 */
 var browser = Browser;
-var config = Config;
 var has = Has;
 var History = State;
 var state = State;
@@ -103,6 +102,7 @@ var TempVariables = State.temporary;
 	for debugging purposes.
 */
 window.SugarCube = {};
+console.log('sugarcube.js loaded')
 
 /*
 	Main function, entry point for the story.
@@ -130,6 +130,9 @@ jQuery(() => {
     if (document.normalize) {
       document.normalize();
     }
+
+    // Init the Era system
+    Era.init();
 
     // Load the story data (must be done before most anything else).
     Story.load();
@@ -183,6 +186,11 @@ jQuery(() => {
         return;
       }
 
+      //if the modules still initializing, wait
+      if(Config.runningcycle && !Config.afterinit){
+         return;
+      }
+
       // Clear the recurring timer.
       clearInterval(vprCheckId);
 
@@ -206,6 +214,7 @@ jQuery(() => {
       // WARNING: We need to assign new values at points, so seal it, do not freeze it.
       value: Object.seal(
         Object.assign(Object.create(null), {
+          Era,
           Browser,
           Config,
           Dialog,
@@ -232,6 +241,7 @@ jQuery(() => {
           setup,
           storage,
           version,
+          LoadScreen,
         })
       ),
     });

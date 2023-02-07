@@ -26,7 +26,7 @@ var Passage = (() => { // eslint-disable-line no-unused-vars, no-var
 	*/
 	// For Twine 1
 	if (TWINE1) {
-		_tagsToSkip = /^(?:debug|nobr|passage|script|stylesheet|widget|twine\..*)$/i;
+		_tagsToSkip = /^(?:debug|nobr|passage|script|stylesheet|widget|twine|csv|table|xml\..*)$/i;
 	}
 	// For Twine 2
 	else {
