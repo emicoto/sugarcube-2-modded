@@ -508,8 +508,8 @@ var Engine = (() => {
       const passage_lan = Story.has(passageTitle + ":" + Config.lan)
          ? Story.get(passageTitle + ":" + Config.lan)
          : null;
-      const passage_sec = Story.has(passageTitle + ":" + Config.seclan)
-         ? Story.get(passageTitle + ":" + Config.seclan)
+      const passage_sec = Story.has(passageTitle + ":" + Config.secLan)
+         ? Story.get(passageTitle + ":" + Config.secLan)
          : null;
 
       // Execute the pre-history events and tasks.
@@ -619,7 +619,7 @@ var Engine = (() => {
       }
 
       // if the current language is the default language, don't switch it, just render it. if other language is not available, render the default language.
-      if (Config.lan === Config.deflan || (!passage_lan && !passage_sec)) {
+      if (Config.lan === Config.defLan || (!passage_lan && !passage_sec)) {
          passageEl.appendChild(passage.render());
       }
 

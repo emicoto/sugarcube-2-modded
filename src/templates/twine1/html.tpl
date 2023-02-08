@@ -50,7 +50,7 @@ if(document.head&&document.addEventListener&&document.querySelector&&Object.crea
 </head>
 <body>
 	<div id="init-screen">
-		Loading
+		<p id='loadingstatus'>Loading</p>
 		<span></span>
 		<div id="init-no-js"><noscript>JavaScript must be enabled to play.</noscript></div>
 		<div id="init-lacking"><p>Browser lacks capabilities required to play.</p><p>Upgrade or switch to another browser.</p></div>

@@ -11,7 +11,7 @@ const xml2Obj = function (obj) {
          //convert li to array
 
          if (isLiArr(obj[key])) {
-            result[key] = convertArr(obj[key], key);
+            result[key] = convertArr(obj[key].li, key);
          }
          //convert li obj to array
          else if (isLi(obj[key])) {
@@ -104,3 +104,10 @@ const xml2Obj = function (obj) {
 
    return convertObj(obj, "root");
 };
+
+Object.defineProperty(window, "xml2Obj", {
+   value: xml2Obj,
+   writable: false,
+   enumerable: false,
+   configurable: false,
+});

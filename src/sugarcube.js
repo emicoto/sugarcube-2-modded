@@ -16,36 +16,36 @@
 	Version object.
 */
 var version = Object.freeze({
-  title: "SugarCube",
-  major: "{{BUILD_VERSION_MAJOR}}",
-  minor: "{{BUILD_VERSION_MINOR}}",
-  patch: "{{BUILD_VERSION_PATCH}}",
-  prerelease: "{{BUILD_VERSION_PRERELEASE}}",
-  build: "{{BUILD_VERSION_BUILD}}",
-  date: new Date("{{BUILD_VERSION_DATE}}"),
-  /* legacy */
-  extensions: {},
-  /* /legacy */
+   title: "SugarCube",
+   major: "{{BUILD_VERSION_MAJOR}}",
+   minor: "{{BUILD_VERSION_MINOR}}",
+   patch: "{{BUILD_VERSION_PATCH}}",
+   prerelease: "{{BUILD_VERSION_PRERELEASE}}",
+   build: "{{BUILD_VERSION_BUILD}}",
+   date: new Date("{{BUILD_VERSION_DATE}}"),
+   /* legacy */
+   extensions: {},
+   /* /legacy */
 
-  toString() {
-    "use strict";
+   toString() {
+      "use strict";
 
-    const prerelease = this.prerelease ? `-${this.prerelease}` : "";
-    return `${this.major}.${this.minor}.${this.patch}${prerelease}+${this.build}`;
-  },
+      const prerelease = this.prerelease ? `-${this.prerelease}` : "";
+      return `${this.major}.${this.minor}.${this.patch}${prerelease}+${this.build}`;
+   },
 
-  short() {
-    "use strict";
+   short() {
+      "use strict";
 
-    const prerelease = this.prerelease ? `-${this.prerelease}` : "";
-    return `${this.title} (v${this.major}.${this.minor}.${this.patch}${prerelease})`;
-  },
+      const prerelease = this.prerelease ? `-${this.prerelease}` : "";
+      return `${this.title} (v${this.major}.${this.minor}.${this.patch}${prerelease})`;
+   },
 
-  long() {
-    "use strict";
+   long() {
+      "use strict";
 
-    return `${this.title} v${this.toString()} (${this.date.toUTCString()})`;
-  },
+      return `${this.title} v${this.toString()} (${this.date.toUTCString()})`;
+   },
 });
 
 /* eslint-disable no-unused-vars */
@@ -102,156 +102,172 @@ var TempVariables = State.temporary;
 	for debugging purposes.
 */
 window.SugarCube = {};
-console.log('sugarcube.js loaded')
 
 /*
 	Main function, entry point for the story.
 */
 jQuery(() => {
-  "use strict";
+   "use strict";
 
-  if (DEBUG) {
-    console.log("[SugarCube/main()] Document loaded; beginning startup.");
-  }
+   if (DEBUG) {
+      console.log("[SugarCube/main()] Document loaded; beginning startup.");
+   }
 
-  /*
+   console.log("sugarcube.js start up");
+   jQuery(document).trigger("sugarcube:startup");
+   /*
 		WARNING!
 
 		The ordering of the code within this function is critically important,
 		so be careful when mucking around with it.
 	*/
-  try {
-    // Acquire an initial lock for and initialize the loading screen.
-    jQuery.event.trigger({ type: ":startinit" });
-    const lockId = LoadScreen.lock();
-    LoadScreen.init();
+   try {
+      // Acquire an initial lock for and initialize the loading screen.
+      const lockId = LoadScreen.lock();
+      LoadScreen.init();
 
-    // Normalize the document.
-    if (document.normalize) {
-      document.normalize();
-    }
-
-    // Init the Era system
-    Era.init();
-
-    // Load the story data (must be done before most anything else).
-    Story.load();
-
-    // Instantiate the storage and session objects.
-    // NOTE: `SimpleStore.create(storageId, persistent)`
-    storage = SimpleStore.create(Story.domId, true);
-    session = SimpleStore.create(Story.domId, false);
-
-    // Initialize the user interface (must be done before story initialization, specifically before scripts).
-    Dialog.init();
-    UIBar.init();
-    Engine.init();
-
-    // Initialize the story (largely load the user styles, scripts, and widgets).
-    Story.init();
-
-    // Initialize the localization (must be done after story initialization).
-    L10n.init();
-
-    // Alert when the browser is degrading required capabilities (must be done after localization initialization).
-    if (!session.has("rcWarn") && storage.name === "cookie") {
-      /* eslint-disable no-alert */
-      session.set("rcWarn", 1);
-      window.alert(L10n.get("warningNoWebStorage"));
-      /* eslint-enable no-alert */
-    }
-
-    // Initialize the saves (must be done after story initialization, but before engine start).
-    Save.init();
-
-    // Initialize the settings.
-    Setting.init();
-
-    // Initialize the macros.
-    Macro.init();
-
-    // Start the engine (should be done as late as possible, but before interface startup).
-    Engine.start();
-
-    // Initialize the debug bar interface (should be done as late as possible, but before interface startup).
-    if (Config.debug) {
-      DebugBar.init();
-    }
-
-    // Set a recurring timer to start the interfaces (necessary due to DOM readiness issues in some browsers).
-    const $window = $(window);
-    const vprCheckId = setInterval(() => {
-      // If `$window.width()` returns a zero value, bail out and wait.
-      if (!$window.width()) {
-        return;
+      // Normalize the document.
+      if (document.normalize) {
+         document.normalize();
       }
 
-      //if the modules still initializing, wait
-      if(Config.runningcycle && !Config.afterinit){
-         return;
+      // Init the Era system
+      Era.init();
+
+      // Load the story data (must be done before most anything else).
+      Story.load();
+
+      // Instantiate the storage and session objects.
+      // NOTE: `SimpleStore.create(storageId, persistent)`
+      storage = SimpleStore.create(Story.domId, true);
+      session = SimpleStore.create(Story.domId, false);
+
+      // Initialize the user interface (must be done before story initialization, specifically before scripts).
+      Dialog.init();
+      UIBar.init();
+      Engine.init();
+
+      // Initialize the story (largely load the user styles, scripts, and widgets).
+      Story.init();
+
+      // Initialize the localization (must be done after story initialization).
+      L10n.init();
+
+      // Alert when the browser is degrading required capabilities (must be done after localization initialization).
+      if (!session.has("rcWarn") && storage.name === "cookie") {
+         /* eslint-disable no-alert */
+         session.set("rcWarn", 1);
+         window.alert(L10n.get("warningNoWebStorage"));
+         /* eslint-enable no-alert */
       }
 
-      // Clear the recurring timer.
-      clearInterval(vprCheckId);
+      // Initialize the saves (must be done after story initialization, but before engine start).
+      Save.init();
 
-      // Start the UI bar interface.
-      UIBar.start();
+      // Initialize the settings.
+      Setting.init();
 
-      // Start the debug bar interface.
-      if (Config.debug) {
-        DebugBar.start();
+      // Initialize the macros.
+      Macro.init();
+
+      // Start the engine (should be done as late as possible, but before interface startup).
+
+      //if the scEra is running, wait for it to finish loading
+      if (Config.onEra) {
+         $(document).one(":afterload", () => {
+            Engine.start();
+            // Initialize the debug bar interface (should be done as late as possible, but before interface startup).
+            if (Config.debug) {
+               DebugBar.init();
+            }
+         });
+      }
+      //otherwise, if just working on sugarcube, start the engine
+      else {
+         Engine.start();
+         // Initialize the debug bar interface (should be done as late as possible, but before interface startup).
+         if (Config.debug) {
+            DebugBar.init();
+         }
       }
 
-      // Trigger the `:storyready` global synthetic event.
-      jQuery.event.trigger({ type: ":storyready" });
+      // Set a recurring timer to start the interfaces (necessary due to DOM readiness issues in some browsers).
+      const $window = $(window);
+      const vprCheckId = setInterval(() => {
+         // If `$window.width()` returns a zero value, bail out and wait.
+         if (!$window.width()) {
+            return;
+         }
 
-      // Release the loading screen lock after a short delay.
-      setTimeout(() => LoadScreen.unlock(lockId), Engine.minDomActionDelay * 2);
-    }, Engine.minDomActionDelay);
+         //if the modules still initializing, wait
+         if (Config.onEra && Era.status !== "storyready") {
+            return;
+         }
 
-    // Finally, export identifiers for debugging purposes.
-    Object.defineProperty(window, "SugarCube", {
-      // WARNING: We need to assign new values at points, so seal it, do not freeze it.
-      value: Object.seal(
-        Object.assign(Object.create(null), {
-          Era,
-          Browser,
-          Config,
-          Dialog,
-          Engine,
-          Fullscreen,
-          Has,
-          L10n,
-          Macro,
-          Passage,
-          Save,
-          Scripting,
-          Setting,
-          SimpleAudio,
-          State,
-          Story,
-          UI,
-          UIBar,
-          DebugBar,
-          Util,
-          Visibility,
-          Wikifier,
-          session,
-          settings,
-          setup,
-          storage,
-          version,
-          LoadScreen,
-        })
-      ),
-    });
+         // Clear the recurring timer.
+         clearInterval(vprCheckId);
 
-    if (DEBUG) {
-      console.log("[SugarCube/main()] Startup complete; story ready.");
-    }
-  } catch (ex) {
-    console.error(ex);
-    LoadScreen.clear();
-    return Alert.fatal(null, ex.message, ex);
-  }
+         // Start the UI bar interface.
+         UIBar.start();
+
+         // Start the debug bar interface.
+         if (Config.debug) {
+            DebugBar.start();
+         }
+
+         // Trigger the `:storyready` global synthetic event.
+         jQuery.event.trigger({ type: ":storyready" });
+
+         // Release the loading screen lock after a short delay.
+         setTimeout(
+            () => LoadScreen.unlock(lockId),
+            Engine.minDomActionDelay * 2
+         );
+      }, Engine.minDomActionDelay);
+
+      // Finally, export identifiers for debugging purposes.
+      Object.defineProperty(window, "SugarCube", {
+         // WARNING: We need to assign new values at points, so seal it, do not freeze it.
+         value: Object.seal(
+            Object.assign(Object.create(null), {
+               Era,
+               Browser,
+               Config,
+               Dialog,
+               Engine,
+               Fullscreen,
+               Has,
+               L10n,
+               Macro,
+               Passage,
+               Save,
+               Scripting,
+               Setting,
+               SimpleAudio,
+               State,
+               Story,
+               UI,
+               UIBar,
+               DebugBar,
+               Util,
+               Visibility,
+               Wikifier,
+               session,
+               settings,
+               setup,
+               storage,
+               version,
+               LoadScreen,
+            })
+         ),
+      });
+
+      if (DEBUG) {
+         console.log("[SugarCube/main()] Startup complete; story ready.");
+      }
+   } catch (ex) {
+      console.error(ex);
+      LoadScreen.clear();
+      return Alert.fatal(null, ex.message, ex);
+   }
 });

@@ -30,6 +30,18 @@ var Era = (() => {
       console[type](`[${type}] ${new Date().toLocaleTimeString()} |`, ...args);
    };
 
+   const dlog = function (type = "log", ...args) {
+      if (!["log", "warn", "error"].includes(type)) {
+         args.unshift(type);
+         type = "log";
+      }
+      if (Config.debug)
+         console[type](
+            `[${type}] ${new Date().toLocaleTimeString()} |`,
+            ...args
+         );
+   };
+
    function defineNamespaceEra() {
       window.scEra = {
          /**
@@ -38,7 +50,7 @@ var Era = (() => {
           * @description
           * The Era.loadOrder namespace is the root namespace for all of the Era core load order modules.
           */
-         loadorder: {},
+         loadorder: [],
 
          /**
           * @namespace
@@ -98,6 +110,7 @@ var Era = (() => {
          modEvents: {},
          mods: {},
          modlist: [],
+         startupInit: [],
 
          /**
           * @namespace
@@ -169,6 +182,8 @@ var Era = (() => {
           * @see {@link scEra.game}
           */
          game: {},
+
+         status: "init",
       };
 
       // Define the global shortcuts
@@ -199,12 +214,10 @@ var Era = (() => {
       Object.defineProperties(window, {
          State: { get: () => State },
          Story: { get: () => Story },
-         UIbar: { get: () => UIbar },
-         Loadscreen: { get: () => LoadScreen },
       });
 
       //trigger a document event let the game modules know the game is ready to start.
-      jQuery(document).trigger("scEra:ready");
+      jQuery(document).trigger("Era:start");
    }
 
    function addMod(modules) {
@@ -249,8 +262,8 @@ var Era = (() => {
          return false;
       }
 
-      const { config, func, apply, language, setup, data } = module;
-      dlog("log", "Start to apply module:", modname);
+      const { config, func, apply, language, setup, data, Init } = module;
+      slog("log", "Start to apply module:", modname);
 
       //merge to scEra database
       Object.keys(module.classObj).forEach((key) => {
@@ -267,13 +280,13 @@ var Era = (() => {
       };
 
       if (func) {
-         dlog("log", "Start to register function to scEra");
+         slog("log", "Start to register function to scEra:", modname);
 
          Object.keys(func).forEach((key) => {
             if (merge[key]) {
                Object.keys(func[key]).forEach((key2) => {
                   if (window.scEra[merge[key]][key2]) {
-                     dlog(
+                     slog(
                         "warn",
                         `Function ${key2} is already exist in scEra.${merge[key]}. overwrite it.`
                      );
@@ -286,7 +299,7 @@ var Era = (() => {
                });
             } else {
                if (window.scEra.utils[key]) {
-                  dlog(
+                  slog(
                      "warn",
                      `Function ${key} is already exist in scEra.utils. overwrite it.`
                   );
@@ -301,7 +314,7 @@ var Era = (() => {
       const mergeData = function (type, data) {
          if (!data) return;
 
-         dlog(
+         slog(
             "log",
             `Start to merge from module ${modname} to scEra.${type} database.`
          );
@@ -332,12 +345,8 @@ var Era = (() => {
                   slog("error", `Merge failed.`, e);
                }
             } else if (
-               (typeof era[type][key] === typeof data[key] && [
-                  "string",
-                  "number",
-                  "function",
-               ],
-               includes(typeof era[type][key]))
+               typeof era[type][key] === typeof data[key] &&
+               ["string", "number", "function"].includes(typeof era[type][key])
             ) {
                era[type][key] = data[key];
                slog(
@@ -415,8 +424,13 @@ var Era = (() => {
          dlog("log", "Apply function is executed.");
       }
 
+      if (Init) {
+         dlog("log", "Register startup init function to list.");
+         window.scEra.startupInit.push(...Init);
+      }
+
       window.scEra.modlist.push(modname);
-      dlog("log", `Module ${modname} is loaded.`);
+      slog("log", `Module ${modname} is loaded.`);
 
       return true;
    }
@@ -542,35 +556,38 @@ var Era = (() => {
       //conver era type csv file to object
       else {
          for (const _row of raw) {
-            const obj = {};
-
             //clear comment
-            if ((_row[0] === "/" && _row[1] === "*") || _row[0] === ";")
+            if (
+               (_row[0] === "/" && _row[1] === "*") ||
+               _row[0] === ";" ||
+               !_row.length
+            )
                continue;
 
-            const row = _row.split(",");
-            row = cleanArray(row);
-
+            let row = _row.split(",");
             //init the path
             let path = row[0];
+
+            row = cleanArray(row);
             //the duplicate path is array
-            const times = _raw.split(`#L#${path},`).length - 1;
+            const times = _raw.split(`\n${path},`).length - 1;
 
             //get the value
             let value = row.splice(1);
-            value = convertArrayValues(value);
+            //console.log(_row, row, value);
+            convertArrayValues(value);
 
             //if just one value, convert it
             if (value.length === 1) value = value[0];
 
             //if has multiple path, convert it to array
             if (times > 1) {
-               setVbyPatAndType(obj, path, value, "array");
+               setVbyPathAndType(data, path, value, "array");
             }
 
             //otherwise, just set the value
             else {
-               setVbyPatAndType(obj, path, value);
+               setVbyPathAndType(data, path, value);
             }
          }
       }
@@ -676,7 +693,7 @@ var Era = (() => {
       const data = {};
 
       //loop the raw data
-      for (const line of raw) {
+      for (let line of raw) {
          line = line.trim();
          //if the line is empty or comment, skip it.
          if (
@@ -878,16 +895,22 @@ var Era = (() => {
 
    //sync some function to scEra
    Object.defineProperties(window.scEra, {
-      now: { value: now },
-      loadCSV: { value: loadCSV },
-      defineGlobal: { value: defineGlobal },
-      addMod: { value: addMod },
-      parseXML: { value: parseXML },
-      parseTable: { value: parseTable },
-      loadTxt: { value: loadTxt },
-      put: { value: output },
       hasMod: { value: hasMod },
       applyMod: { value: applyMod },
+   });
+
+   Object.defineProperties(window.scEra.utils, {
+      defineGlobal: { value: defineGlobal },
+      globalShortcut: { value: globalShortcut },
+      loadCSV: { value: loadCSV },
+      parseXML: { value: parseXML },
+      parseTable: { value: parseTable },
+   });
+
+   Object.defineProperties(window.scEra.documentGenerator, {
+      print: { value: output },
+      add: { value: newTemp },
+      loadTxt: { value: loadTxt },
    });
 
    //add some functions to glabal for convenience
@@ -904,10 +927,7 @@ var Era = (() => {
          {},
          {
             init: { value: initState },
-            defineGlobal: { value: defineGlobal },
-            globalShortcut: { value: globalShortcut },
             addMod: { value: addMod },
-            now: { value: now },
             loadCSV: { value: loadCSV },
             parseXML: { value: parseXML },
             parseTable: { value: parseTable },
@@ -921,6 +941,7 @@ var Era = (() => {
 
             hasMod: { value: hasMod },
             applyMod: { value: applyMod },
+            now: { value: now },
 
             //sync the database and functions both to inside or outside the module.
             CSV: { get: () => window.scEra.csv },
@@ -933,6 +954,11 @@ var Era = (() => {
             modEvents: { get: () => window.scEra.modEvents },
             mods: { get: () => window.scEra.mods },
             modlist: { get: () => window.scEra.modlist },
+
+            status: {
+               get: () => window.scEra.status,
+               set: (v) => (window.scEra.status = v),
+            },
          }
       )
    );

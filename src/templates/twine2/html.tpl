@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <!--
 
-SugarCube (v'{{BUILD_VERSION_VERSION}}'): A free (gratis and libre) story format.
+SugarCube (v'{{BUILD_VERSION_VERSION}}')+Era Edition: A free (gratis and libre) story format.
 
 Copyright © 2013–2021 Thomas Michael Edwards <thomasmedwards@gmail.com>.
 All rights reserved.
@@ -41,7 +41,7 @@ if(document.head&&document.addEventListener&&document.querySelector&&Object.crea
 </head>
 <body>
 	<div id="init-screen">
-		Loadng
+		<p id='loadingstatus'>Loading</p>
 		<span></span>
 		<div id="init-no-js"><noscript>JavaScript must be enabled to play.</noscript></div>
 		<div id="init-lacking"><p>Browser lacks capabilities required to play.</p><p>Upgrade or switch to another browser.</p></div>
